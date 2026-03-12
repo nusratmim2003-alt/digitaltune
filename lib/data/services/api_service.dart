@@ -71,11 +71,7 @@ class ApiService {
   }) async {
     return _dio.post(
       '/auth/register',
-      data: {
-        'name': name,
-        'email': email,
-        'password': password,
-      },
+      data: {'name': name, 'email': email, 'password': password},
     );
   }
 
@@ -85,10 +81,7 @@ class ApiService {
   }) async {
     return _dio.post(
       '/auth/login',
-      data: {
-        'email': email,
-        'password': password,
-      },
+      data: {'email': email, 'password': password},
     );
   }
 
@@ -96,15 +89,8 @@ class ApiService {
     return _dio.get('/auth/me');
   }
 
-  Future<Response> googleLogin({
-    required String idToken,
-  }) async {
-    return _dio.post(
-      '/auth/google',
-      data: {
-        'idToken': idToken,
-      },
-    );
+  Future<Response> googleLogin({required String idToken}) async {
+    return _dio.post('/auth/google', data: {'idToken': idToken});
   }
 
   // ========================================
@@ -142,9 +128,7 @@ class ApiService {
   }) async {
     return _dio.post(
       '/cassettes/$shareCode/unlock',
-      data: {
-        'password': password,
-      },
+      data: {'password': password},
     );
   }
 
@@ -198,5 +182,25 @@ class ApiService {
 
   Future<Response> getCassetteById(String cassetteId) async {
     return _dio.get('/cassettes/by-id/$cassetteId');
+  }
+
+  // ========================================
+  // UPTIME / HEALTH
+  // ========================================
+
+  /// Silent keep-alive ping — hits /health directly (not /api).
+  /// Called periodically so the Render free-tier instance never sleeps.
+  Future<void> pingHealth() async {
+    try {
+      await Dio().get(
+        'https://digitalcassette-api.onrender.com/health',
+        options: Options(
+          sendTimeout: const Duration(seconds: 10),
+          receiveTimeout: const Duration(seconds: 10),
+        ),
+      );
+    } catch (_) {
+      // Intentionally silent — this is just a keep-alive probe.
+    }
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app_links/app_links.dart';
 import 'dart:async';
 import '../core/theme/app_theme.dart';
+import '../data/services/api_service.dart';
 import 'router.dart';
 
 class DigitalCassetteApp extends ConsumerStatefulWidget {
@@ -15,11 +16,27 @@ class DigitalCassetteApp extends ConsumerStatefulWidget {
 class _DigitalCassetteAppState extends ConsumerState<DigitalCassetteApp> {
   final _appLinks = AppLinks();
   StreamSubscription<Uri>? _linkSubscription;
+  Timer? _uptimeTimer;
 
   @override
   void initState() {
     super.initState();
     _initDeepLinks();
+    _startUptimePing();
+  }
+
+  /// Pings /health immediately, then every 10 minutes so the Render
+  /// free-tier instance never idles and causes a cold-start delay.
+  void _startUptimePing() {
+    _pingServer();
+    _uptimeTimer = Timer.periodic(
+      const Duration(minutes: 10),
+      (_) => _pingServer(),
+    );
+  }
+
+  void _pingServer() {
+    ref.read(apiServiceProvider).pingHealth();
   }
 
   Future<void> _initDeepLinks() async {
@@ -58,6 +75,7 @@ class _DigitalCassetteAppState extends ConsumerState<DigitalCassetteApp> {
   @override
   void dispose() {
     _linkSubscription?.cancel();
+    _uptimeTimer?.cancel();
     super.dispose();
   }
 
