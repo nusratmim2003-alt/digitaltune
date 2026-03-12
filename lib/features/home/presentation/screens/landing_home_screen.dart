@@ -61,22 +61,13 @@ class LandingHomeScreen extends ConsumerWidget {
       ),
       decoration: BoxDecoration(
         color: AppColors.white.withOpacity(0.6),
-        border: Border(
-          bottom: BorderSide(
-            color: AppColors.border,
-            width: 1,
-          ),
-        ),
+        border: Border(bottom: BorderSide(color: AppColors.border, width: 1)),
       ),
       child: SafeArea(
         child: Row(
           children: [
             // Logo
-            Icon(
-              Icons.album,
-              color: AppColors.accent,
-              size: 22,
-            ),
+            Icon(Icons.album, color: AppColors.accent, size: 22),
             const SizedBox(width: 4),
             Flexible(
               child: Text(
@@ -127,8 +118,10 @@ class LandingHomeScreen extends ConsumerWidget {
               child: TextButton(
                 onPressed: () => context.push('/create-cassette'),
                 style: TextButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   minimumSize: const Size(0, 32),
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
@@ -153,10 +146,7 @@ class LandingHomeScreen extends ConsumerWidget {
                 size: 22,
               ),
               padding: const EdgeInsets.all(8),
-              constraints: const BoxConstraints(
-                minWidth: 32,
-                minHeight: 32,
-              ),
+              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
               onPressed: () =>
                   context.push(isAuthenticated ? '/profile' : '/login'),
             ),
@@ -201,10 +191,7 @@ class LandingHomeScreen extends ConsumerWidget {
           // Main Heading
           Text(
             'Send a Song,\nSeal a Memory',
-            style: AppTypography.h1.copyWith(
-              fontSize: 42,
-              height: 1.2,
-            ),
+            style: AppTypography.h1.copyWith(fontSize: 42, height: 1.2),
             textAlign: TextAlign.center,
           ),
 
@@ -267,9 +254,7 @@ class LandingHomeScreen extends ConsumerWidget {
           children: [
             Text(
               'Enter the 6-character share code',
-              style: AppTypography.body.copyWith(
-                color: AppColors.mutedText,
-              ),
+              style: AppTypography.body.copyWith(color: AppColors.mutedText),
             ),
             const SizedBox(height: AppSpacing.lg),
             TextFormField(
@@ -286,9 +271,7 @@ class LandingHomeScreen extends ConsumerWidget {
                 if (value != value.toUpperCase()) {
                   codeController.value = codeController.value.copyWith(
                     text: value.toUpperCase(),
-                    selection: TextSelection.collapsed(
-                      offset: value.length,
-                    ),
+                    selection: TextSelection.collapsed(offset: value.length),
                   );
                 }
               },
@@ -352,9 +335,7 @@ class LandingHomeScreen extends ConsumerWidget {
         const SizedBox(height: AppSpacing.xs),
         Text(
           label,
-          style: AppTypography.bodySmall.copyWith(
-            color: AppColors.mutedText,
-          ),
+          style: AppTypography.bodySmall.copyWith(color: AppColors.mutedText),
         ),
       ],
     );
@@ -390,9 +371,7 @@ class LandingHomeScreen extends ConsumerWidget {
           // Heading
           Text(
             'Making Memories,\nOne Song',
-            style: AppTypography.h2.copyWith(
-              fontSize: 32,
-            ),
+            style: AppTypography.h2.copyWith(fontSize: 32),
             textAlign: TextAlign.center,
           ),
 
@@ -401,9 +380,7 @@ class LandingHomeScreen extends ConsumerWidget {
           // Subtitle
           Text(
             'Takes less than a minute',
-            style: AppTypography.handwritten.copyWith(
-              color: AppColors.accent,
-            ),
+            style: AppTypography.handwritten.copyWith(color: AppColors.accent),
             textAlign: TextAlign.center,
           ),
 
@@ -416,7 +393,7 @@ class LandingHomeScreen extends ConsumerWidget {
             crossAxisCount: 2,
             mainAxisSpacing: AppSpacing.lg,
             crossAxisSpacing: AppSpacing.lg,
-            childAspectRatio: 0.85,
+            childAspectRatio: 0.62,
             children: [
               _buildFeatureCard(
                 '1',
@@ -472,10 +449,7 @@ class LandingHomeScreen extends ConsumerWidget {
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(AppSpacing.radiusLarge),
-        border: Border.all(
-          color: AppColors.border,
-          width: 1,
-        ),
+        border: Border.all(color: AppColors.border, width: 1),
         boxShadow: [
           BoxShadow(
             color: AppColors.primaryText.withOpacity(0.06),
@@ -509,17 +483,15 @@ class LandingHomeScreen extends ConsumerWidget {
           const SizedBox(height: AppSpacing.md),
 
           // Icon
-          Icon(
-            icon,
-            color: AppColors.primaryText,
-            size: 28,
-          ),
+          Icon(icon, color: AppColors.primaryText, size: 28),
 
           const SizedBox(height: AppSpacing.md),
 
           // Title
           Text(
             title,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
             style: AppTypography.bodyLarge.copyWith(
               fontWeight: FontWeight.w600,
               color: AppColors.primaryText,
@@ -529,11 +501,15 @@ class LandingHomeScreen extends ConsumerWidget {
           const SizedBox(height: AppSpacing.xs),
 
           // Description
-          Text(
-            description,
-            style: AppTypography.bodySmall.copyWith(
-              color: AppColors.mutedText,
-              height: 1.4,
+          Expanded(
+            child: Text(
+              description,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              style: AppTypography.bodySmall.copyWith(
+                color: AppColors.mutedText,
+                height: 1.3,
+              ),
             ),
           ),
         ],
@@ -582,9 +558,7 @@ class LandingHomeScreen extends ConsumerWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.white,
                 foregroundColor: AppColors.amberAccent,
-                padding: const EdgeInsets.symmetric(
-                  vertical: AppSpacing.lg,
-                ),
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppSpacing.radiusMedium),
                 ),
