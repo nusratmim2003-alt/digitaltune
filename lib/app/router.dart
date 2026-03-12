@@ -46,7 +46,9 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // Show splash while checking auth status
       if (authState.isInitial || authState.isLoading) {
-        if (location != '/splash') {
+        if (location != '/splash' &&
+            !location.startsWith('/unlock/') &&
+            !location.startsWith('/cassette/')) {
           return '/splash';
         }
         return null;
