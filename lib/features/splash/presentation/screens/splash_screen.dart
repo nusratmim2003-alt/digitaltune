@@ -20,7 +20,7 @@ class SplashScreen extends ConsumerWidget {
               height: 120,
               decoration: BoxDecoration(
                 color: AppColors.cassetteBrown,
-                borderRadius: BorderRadius.circular(16),
+                shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
                     color: AppColors.primaryText.withValues(alpha: 0.1),
@@ -30,7 +30,7 @@ class SplashScreen extends ConsumerWidget {
                 ],
               ),
               child: Icon(
-                Icons.library_music,
+                Icons.music_note_rounded,
                 size: 60,
                 color: AppColors.accent,
               ),

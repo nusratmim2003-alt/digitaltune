@@ -189,17 +189,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Image.network(
-                        'https://www.google.com/favicon.ico',
-                        width: 20,
-                        height: 20,
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Icon(
-                            Icons.language,
-                            size: 20,
-                            color: AppColors.deepBrown,
-                          );
-                        },
+                      Container(
+                        width: 28,
+                        height: 28,
+                        decoration: BoxDecoration(
+                          color: AppColors.cassetteBrown,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.music_note_rounded,
+                          size: 16,
+                          color: AppColors.accent,
+                        ),
                       ),
                       const SizedBox(width: AppSpacing.sm),
                       Text(

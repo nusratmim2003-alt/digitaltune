@@ -54,6 +54,8 @@ class LandingHomeScreen extends ConsumerWidget {
   }
 
   Widget _buildTopNavBar(BuildContext context, bool isAuthenticated) {
+    final isCompact = MediaQuery.of(context).size.width < 380;
+
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.lg,
@@ -67,38 +69,68 @@ class LandingHomeScreen extends ConsumerWidget {
         child: Row(
           children: [
             // Logo
-            Icon(Icons.album, color: AppColors.accent, size: 22),
-            const SizedBox(width: 4),
-            Flexible(
+            Container(
+              width: isCompact ? 30 : 34,
+              height: isCompact ? 30 : 34,
+              decoration: BoxDecoration(
+                color: AppColors.cassetteBrown,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primaryText.withOpacity(0.08),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Icon(
+                Icons.music_note_rounded,
+                color: AppColors.accent,
+                size: isCompact ? 16 : 18,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
               child: Text(
                 'TuneLetter',
                 style: AppTypography.body.copyWith(
                   fontWeight: FontWeight.w600,
                   color: AppColors.primaryText,
-                  fontSize: 14,
+                  fontSize: isCompact ? 13 : 15,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
 
-            const Spacer(),
-
             // Library Tab
-            TextButton(
-              onPressed: () => context.push('/library'),
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                minimumSize: const Size(0, 32),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              child: Text(
-                'Library',
-                style: AppTypography.bodySmall.copyWith(
+            if (isCompact)
+              IconButton(
+                onPressed: () => context.push('/library'),
+                icon: Icon(
+                  Icons.library_music_outlined,
                   color: AppColors.mutedText,
-                  fontSize: 13,
+                  size: 20,
+                ),
+                padding: const EdgeInsets.all(6),
+                constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
+              )
+            else
+              TextButton(
+                onPressed: () => context.push('/library'),
+                style: TextButton.styleFrom(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                  minimumSize: const Size(0, 32),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: Text(
+                  'Library',
+                  style: AppTypography.bodySmall.copyWith(
+                    color: AppColors.mutedText,
+                    fontSize: 13,
+                  ),
                 ),
               ),
-            ),
 
             const SizedBox(width: 4),
 
@@ -119,18 +151,18 @@ class LandingHomeScreen extends ConsumerWidget {
                 onPressed: () => context.push('/create-cassette'),
                 style: TextButton.styleFrom(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
+                    horizontal: 10,
                     vertical: 8,
                   ),
                   minimumSize: const Size(0, 32),
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
                 child: Text(
-                  'Create',
+                  isCompact ? 'New' : 'Create',
                   style: AppTypography.bodySmall.copyWith(
                     color: AppColors.white,
                     fontWeight: FontWeight.w600,
-                    fontSize: 13,
+                    fontSize: isCompact ? 12 : 13,
                   ),
                 ),
               ),
@@ -520,45 +552,67 @@ class LandingHomeScreen extends ConsumerWidget {
   Widget _buildFinalCTASection(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-      padding: const EdgeInsets.all(AppSpacing.xxxl),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.xl,
+        vertical: AppSpacing.xl,
+      ),
       decoration: BoxDecoration(
         gradient: AppColors.accentGradient,
         borderRadius: BorderRadius.circular(AppSpacing.radiusLarge),
+        border: Border.all(
+          color: AppColors.white.withOpacity(0.18),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
             color: AppColors.accent.withOpacity(0.3),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
       child: Column(
         children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: AppColors.white.withOpacity(0.16),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.music_note_rounded,
+              color: AppColors.white,
+              size: 22,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
           Text(
             'Ready to make\nsomeone\'s day?',
             style: AppTypography.h2.copyWith(
               color: AppColors.white,
-              fontSize: 32,
+              fontSize: 24,
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: AppSpacing.md),
+          const SizedBox(height: AppSpacing.sm),
           Text(
             'A song, a few words, and a little heart.',
             style: AppTypography.handwritten.copyWith(
               color: AppColors.white.withOpacity(0.9),
+              fontSize: 20,
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: AppSpacing.xl),
+          const SizedBox(height: AppSpacing.lg),
           SizedBox(
-            width: double.infinity,
+            width: 220,
             child: ElevatedButton(
               onPressed: () => context.push('/create-cassette'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.white,
                 foregroundColor: AppColors.amberAccent,
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppSpacing.radiusMedium),
                 ),
@@ -566,9 +620,11 @@ class LandingHomeScreen extends ConsumerWidget {
               ),
               child: Text(
                 'Create Your First Cassette',
-                style: AppTypography.bodyLarge.copyWith(
+                textAlign: TextAlign.center,
+                style: AppTypography.bodySmall.copyWith(
                   fontWeight: FontWeight.w600,
                   color: AppColors.accent,
+                  fontSize: 13,
                 ),
               ),
             ),
@@ -584,10 +640,18 @@ class LandingHomeScreen extends ConsumerWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.album,
-              color: AppColors.primaryText.withOpacity(0.4),
-              size: 20,
+            Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                color: AppColors.cassetteBrown.withOpacity(0.9),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.music_note_rounded,
+                color: AppColors.accent,
+                size: 14,
+              ),
             ),
             const SizedBox(width: AppSpacing.xs),
             Text(

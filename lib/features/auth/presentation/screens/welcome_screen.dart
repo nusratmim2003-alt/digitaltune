@@ -20,11 +20,26 @@ class WelcomeScreen extends StatelessWidget {
             children: [
               const Spacer(),
 
-              // Cassette icon/illustration
-              Icon(
-                Icons.album,
-                size: 120,
-                color: AppColors.amberAccent.withOpacity(0.8),
+              // TuneLetter logo
+              Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  color: AppColors.cassetteBrown,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primaryText.withOpacity(0.1),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  Icons.music_note_rounded,
+                  size: 60,
+                  color: AppColors.accent,
+                ),
               ),
               const SizedBox(height: AppSpacing.xl),
 
