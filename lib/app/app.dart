@@ -84,7 +84,7 @@ class _DigitalCassetteAppState extends ConsumerState<DigitalCassetteApp> {
     final router = ref.watch(routerProvider);
 
     return MaterialApp.router(
-      title: 'Digital Cassette',
+      title: 'TuneLetter',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       routerConfig: router,

@@ -56,15 +56,15 @@ class CassetteCard extends StatelessWidget {
                                 _buildPlaceholder(),
                           )
                         : cassette.youtubeThumbnail != null
-                        ? CachedNetworkImage(
-                            imageUrl: cassette.youtubeThumbnail!,
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) =>
-                                Container(color: AppColors.greyLight),
-                            errorWidget: (context, url, error) =>
-                                _buildPlaceholder(),
-                          )
-                        : _buildPlaceholder(),
+                            ? CachedNetworkImage(
+                                imageUrl: cassette.youtubeThumbnail!,
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) =>
+                                    Container(color: AppColors.greyLight),
+                                errorWidget: (context, url, error) =>
+                                    _buildPlaceholder(),
+                              )
+                            : _buildPlaceholder(),
                   ),
                 ),
                 if (showNewBadge && !cassette.isRead)
@@ -101,11 +101,11 @@ class CassetteCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Letter preview
+                  // Letter preview — single line to prevent card overflow
                   Text(
                     cassette.letterText,
                     style: AppTypography.bodySmall,
-                    maxLines: 2,
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: AppSpacing.sm),
@@ -137,7 +137,6 @@ class CassetteCard extends StatelessWidget {
                       ],
                     ],
                   ),
-                  const SizedBox(height: AppSpacing.xs),
 
                   // Emotion tag
                   EmotionChip(
@@ -199,9 +198,9 @@ class EmotionChip extends StatelessWidget {
           emotion,
           style: (small ? AppTypography.caption : AppTypography.bodySmall)
               .copyWith(
-                color: isSelected ? AppColors.white : color,
-                fontWeight: FontWeight.w500,
-              ),
+            color: isSelected ? AppColors.white : color,
+            fontWeight: FontWeight.w500,
+          ),
         ),
       ),
     );

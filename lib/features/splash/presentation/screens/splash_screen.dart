@@ -39,7 +39,7 @@ class SplashScreen extends ConsumerWidget {
 
             // App name
             Text(
-              'Digital Cassette',
+              'TuneLetter',
               style: AppTypography.h1.copyWith(fontSize: 28),
             ),
             const SizedBox(height: 8),

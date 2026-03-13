@@ -182,7 +182,7 @@ class _CreateCassetteFlowScreenState
   }
 
   String _buildShareDetailsMessage() {
-    return '''🎵 You received a Digital Cassette!
+    return '''🎵 You received a TuneLetter!
 
 Open link:
 ${_shareUrl!}

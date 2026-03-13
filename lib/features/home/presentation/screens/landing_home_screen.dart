@@ -71,7 +71,7 @@ class LandingHomeScreen extends ConsumerWidget {
             const SizedBox(width: 4),
             Flexible(
               child: Text(
-                'Digital Cassette',
+                'TuneLetter',
                 style: AppTypography.body.copyWith(
                   fontWeight: FontWeight.w600,
                   color: AppColors.primaryText,
@@ -591,7 +591,7 @@ class LandingHomeScreen extends ConsumerWidget {
             ),
             const SizedBox(width: AppSpacing.xs),
             Text(
-              'Digital Cassette',
+              'TuneLetter',
               style: AppTypography.bodySmall.copyWith(
                 color: AppColors.primaryText.withOpacity(0.4),
               ),

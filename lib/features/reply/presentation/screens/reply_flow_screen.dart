@@ -79,7 +79,12 @@ class _ReplyFlowScreenState extends ConsumerState<ReplyFlowScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.close),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            if (context.canPop())
+              context.pop();
+            else
+              context.go('/');
+          },
         ),
         title: Text('Reply (${_currentStep + 1}/3)'),
       ),
