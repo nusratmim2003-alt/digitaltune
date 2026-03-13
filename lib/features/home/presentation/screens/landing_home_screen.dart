@@ -102,35 +102,56 @@ class LandingHomeScreen extends ConsumerWidget {
               ),
             ),
 
-            // Library Tab
-            if (isCompact)
-              IconButton(
-                onPressed: () => context.push('/library'),
-                icon: Icon(
-                  Icons.library_music_outlined,
-                  color: AppColors.mutedText,
-                  size: 20,
+            // Library button
+            Container(
+              decoration: BoxDecoration(
+                color: AppColors.white,
+                borderRadius: BorderRadius.circular(AppSpacing.radiusMedium),
+                border: Border.all(
+                  color: AppColors.accent.withOpacity(0.22),
+                  width: 1,
                 ),
-                padding: const EdgeInsets.all(6),
-                constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
-              )
-            else
-              TextButton(
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primaryText.withOpacity(0.05),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: TextButton(
                 onPressed: () => context.push('/library'),
                 style: TextButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isCompact ? 10 : 12,
+                    vertical: 8,
+                  ),
                   minimumSize: const Size(0, 32),
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
-                child: Text(
-                  'Library',
-                  style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.mutedText,
-                    fontSize: 13,
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.library_music_rounded,
+                      color: AppColors.accent,
+                      size: isCompact ? 16 : 18,
+                    ),
+                    if (!isCompact) ...[
+                      const SizedBox(width: 6),
+                      Text(
+                        'Library',
+                        style: AppTypography.bodySmall.copyWith(
+                          color: AppColors.accent,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
+            ),
 
             const SizedBox(width: 4),
 
