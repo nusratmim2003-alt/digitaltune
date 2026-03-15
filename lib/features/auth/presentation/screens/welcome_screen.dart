@@ -65,7 +65,7 @@ class WelcomeScreen extends StatelessWidget {
               // CTAs
               PrimaryButton(
                 text: 'Get Started',
-                onPressed: () => context.go('/signup'),
+                onPressed: () => context.go('/login'),
               ),
               const SizedBox(height: AppSpacing.md),
               SecondaryButton(

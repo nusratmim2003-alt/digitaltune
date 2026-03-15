@@ -43,3 +43,13 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Local BDApps scripts and secrets
+bdapps/
+.env
+.env.*
+backend/.env
+backend/.env.*
+*.key
+*.pem
+android/key.properties

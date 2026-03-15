@@ -41,7 +41,7 @@ class ApiService {
         },
         onError: (error, handler) async {
           if (error.response?.statusCode == 401) {
-            await _storageService.clearAll();
+            await _storageService.deleteAuthToken();
           }
           handler.next(error);
         },

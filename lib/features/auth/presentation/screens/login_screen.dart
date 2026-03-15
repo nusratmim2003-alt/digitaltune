@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_buttons.dart';
 import '../../../../core/widgets/state_widgets.dart';
+import '../../../../data/services/bdapps_auth_service.dart';
 import '../../domain/providers/auth_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -16,58 +17,71 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  bool _obscurePassword = true;
+  final TextEditingController _phoneController = TextEditingController();
+  bool _isLoading = false;
+
+  Future<void> _onContinue() async {
+    final phone = _phoneController.text.trim();
+    final bdapps = ref.read(bdappsAuthServiceProvider);
+
+    if (phone.isEmpty) {
+      AppToast.show(context, 'মোবাইল নম্বর দিন', isError: true);
+      return;
+    }
+
+    if (!bdapps.isSupportedRobiAirtelNumber(phone)) {
+      AppToast.show(context, 'সঠিক Robi/Airtel নম্বর দিন (016/018)',
+          isError: true);
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final isSubscribed = await bdapps.checkAlreadySubscribed(phone);
+
+      if (isSubscribed) {
+        await ref.read(authProvider.notifier).loginWithPhone(phone);
+        if (mounted) context.go('/');
+        return;
+      }
+
+      final otpData = await bdapps.sendOtp(phone);
+      final success = otpData['success'] == true;
+      final referenceNo = otpData['referenceNo']?.toString().trim() ?? '';
+      final message = otpData['message']?.toString() ?? '';
+      final statusDetail = otpData['statusDetail']?.toString() ?? '';
+
+      if (success && referenceNo.isNotEmpty) {
+        if (!mounted) return;
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) =>
+                OtpVerifyPage(phone: phone, referenceNo: referenceNo),
+          ),
+        );
+      } else {
+        final errorMsg = message.isNotEmpty
+            ? message
+            : (statusDetail.isNotEmpty ? statusDetail : 'OTP পাঠানো যায়নি');
+        AppToast.show(context, errorMsg, isError: true);
+      }
+    } catch (e) {
+      AppToast.show(context, 'নেটওয়ার্ক সমস্যা হয়েছে', isError: true);
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
+    _phoneController.dispose();
     super.dispose();
-  }
-
-  Future<void> _handleLogin() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    final authNotifier = ref.read(authProvider.notifier);
-
-    await authNotifier.login(
-      _emailController.text.trim(),
-      _passwordController.text,
-    );
-
-    // Do NOT read ref here after await.
-    // Navigation/toasts should be handled by provider listener below.
-  }
-
-  Future<void> _handleGoogleSignIn() async {
-    final authNotifier = ref.read(authProvider.notifier);
-    await authNotifier.loginWithGoogle();
   }
 
   @override
   Widget build(BuildContext context) {
-    ref.listen(authProvider, (previous, next) {
-      if (!mounted) return;
-
-      final wasLoading = previous?.isLoading ?? false;
-      final finishedLoading = wasLoading && !next.isLoading;
-
-      if (!finishedLoading) return;
-
-      if (next.isAuthenticated) {
-        AppToast.show(context, 'Welcome back!');
-        // Router redirect logic can handle navigation automatically.
-      } else if (next.errorMessage != null && next.errorMessage!.isNotEmpty) {
-        AppToast.show(context, next.errorMessage!, isError: true);
-      }
-    });
-
-    final authState = ref.watch(authProvider);
-    final isLoading = authState.isLoading;
-
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -78,155 +92,165 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppSpacing.xl),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: AppSpacing.xl),
-
-                Text('Welcome back', style: AppTypography.h1),
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  'Log in to your account',
-                  style: AppTypography.body.copyWith(
-                    color: AppColors.lightBrown,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: AppSpacing.xl),
+              Text('স্বাগতম', style: AppTypography.h1),
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                'Robi/Airtel নম্বর দিয়ে লগইন করুন',
+                style: AppTypography.body.copyWith(color: AppColors.lightBrown),
+              ),
+              const SizedBox(height: AppSpacing.xxxl),
+              TextField(
+                controller: _phoneController,
+                keyboardType: TextInputType.phone,
+                enabled: !_isLoading,
+                decoration: InputDecoration(
+                  labelText: 'মোবাইল নম্বর',
+                  hintText: '018********',
+                  prefixIcon: const Icon(Icons.phone_android_rounded),
+                  border: OutlineInputBorder(
+                    borderRadius:
+                        BorderRadius.circular(AppSpacing.radiusMedium),
                   ),
                 ),
-                const SizedBox(height: AppSpacing.xxxl),
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              PrimaryButton(
+                text: 'পরবর্তী',
+                onPressed: _isLoading ? null : _onContinue,
+                isLoading: _isLoading,
+              ),
+              const SizedBox(height: AppSpacing.md),
+              Text(
+                'Flow: Number → Check subscription → OTP → Verify → Login',
+                textAlign: TextAlign.center,
+                style:
+                    AppTypography.caption.copyWith(color: AppColors.mutedText),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
 
-                TextFormField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    hintText: 'your@email.com',
+class OtpVerifyPage extends ConsumerStatefulWidget {
+  final String phone;
+  final String referenceNo;
+
+  const OtpVerifyPage({
+    super.key,
+    required this.phone,
+    required this.referenceNo,
+  });
+
+  @override
+  ConsumerState<OtpVerifyPage> createState() => _OtpVerifyPageState();
+}
+
+class _OtpVerifyPageState extends ConsumerState<OtpVerifyPage> {
+  final TextEditingController _otpController = TextEditingController();
+  bool _isLoading = false;
+
+  Future<void> _verifyOtp() async {
+    final otp = _otpController.text.trim();
+    if (otp.isEmpty || otp.length < 4) {
+      AppToast.show(context, 'OTP সঠিকভাবে দিন', isError: true);
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final bdapps = ref.read(bdappsAuthServiceProvider);
+      final data = await bdapps.verifyOtp(
+        otp: otp,
+        referenceNo: widget.referenceNo,
+        phone: widget.phone,
+      );
+
+      final statusCode =
+          data['statusCode']?.toString().trim().toUpperCase() ?? '';
+
+      if (statusCode == 'S1000') {
+        await bdapps.waitForSubscriptionSync(widget.phone);
+        await ref.read(authProvider.notifier).loginWithPhone(widget.phone);
+        if (!mounted) return;
+        context.go('/');
+      } else {
+        final message = data['message']?.toString() ??
+            data['statusDetail']?.toString() ??
+            'OTP ভুল হয়েছে';
+        AppToast.show(context, message, isError: true);
+      }
+    } catch (_) {
+      AppToast.show(context, 'নেটওয়ার্ক সমস্যা হয়েছে', isError: true);
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _otpController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('OTP যাচাই'), centerTitle: true),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: AppSpacing.xl),
+              const Icon(Icons.sms_outlined, size: 64, color: AppColors.accent),
+              const SizedBox(height: AppSpacing.lg),
+              Text('OTP দিন',
+                  style: AppTypography.h2, textAlign: TextAlign.center),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                '${widget.phone} নম্বরে কোড পাঠানো হয়েছে',
+                textAlign: TextAlign.center,
+                style: AppTypography.bodySmall
+                    .copyWith(color: AppColors.mutedText),
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              TextField(
+                controller: _otpController,
+                keyboardType: TextInputType.number,
+                textAlign: TextAlign.center,
+                maxLength: 6,
+                enabled: !_isLoading,
+                style: const TextStyle(fontSize: 28, letterSpacing: 10),
+                decoration: InputDecoration(
+                  counterText: '',
+                  hintText: '******',
+                  border: OutlineInputBorder(
+                    borderRadius:
+                        BorderRadius.circular(AppSpacing.radiusMedium),
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your email';
-                    }
-                    if (!value.contains('@')) {
-                      return 'Please enter a valid email';
-                    }
-                    return null;
-                  },
                 ),
-                const SizedBox(height: AppSpacing.lg),
-
-                TextFormField(
-                  controller: _passwordController,
-                  obscureText: _obscurePassword,
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    hintText: '••••••••',
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility
-                            : Icons.visibility_off,
-                      ),
-                      onPressed: () {
-                        setState(() => _obscurePassword = !_obscurePassword);
-                      },
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your password';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: AppSpacing.md),
-
-                const SizedBox(height: AppSpacing.xl),
-
-                PrimaryButton(
-                  text: 'Log In',
-                  onPressed: isLoading ? null : _handleLogin,
-                  isLoading: isLoading,
-                ),
-                const SizedBox(height: AppSpacing.lg),
-
-                // Divider with "OR"
-                Row(
-                  children: [
-                    const Expanded(child: Divider()),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md,
-                      ),
-                      child: Text(
-                        'OR',
-                        style: AppTypography.bodySmall.copyWith(
-                          color: AppColors.lightBrown,
-                        ),
-                      ),
-                    ),
-                    const Expanded(child: Divider()),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.lg),
-
-                // Google Sign-In Button
-                OutlinedButton(
-                  onPressed: isLoading ? null : _handleGoogleSignIn,
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: AppSpacing.md,
-                    ),
-                    side: const BorderSide(
-                      color: AppColors.greyMedium,
-                      width: 1.5,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(
-                        AppSpacing.radiusMedium,
-                      ),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 28,
-                        height: 28,
-                        decoration: BoxDecoration(
-                          color: AppColors.cassetteBrown,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.music_note_rounded,
-                          size: 16,
-                          color: AppColors.accent,
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Text(
-                        'Continue with Google',
-                        style: AppTypography.body.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.deepBrown,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text("Don't have an account? ", style: AppTypography.body),
-                    AppTextButton(
-                      text: 'Sign Up',
-                      onPressed: () => context.go('/signup'),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              PrimaryButton(
+                text: 'যাচাই করুন',
+                onPressed: _isLoading ? null : _verifyOtp,
+                isLoading: _isLoading,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              AppTextButton(
+                text: 'ভুল নম্বর? পিছনে যান',
+                onPressed: _isLoading ? null : () => Navigator.pop(context),
+              ),
+            ],
           ),
         ),
       ),
