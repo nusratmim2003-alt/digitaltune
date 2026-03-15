@@ -224,7 +224,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   Container(
                     width: 56,
                     height: 56,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: AppColors.cassetteBrown,
                       shape: BoxShape.circle,
                     ),

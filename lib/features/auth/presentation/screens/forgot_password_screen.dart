@@ -119,7 +119,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const SizedBox(height: AppSpacing.xxxl),
-        Icon(Icons.email_outlined, size: 80, color: AppColors.success),
+        const Icon(Icons.email_outlined, size: 80, color: AppColors.success),
         const SizedBox(height: AppSpacing.xl),
         Text(
           'Check Your Email',

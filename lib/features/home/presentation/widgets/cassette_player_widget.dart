@@ -53,7 +53,7 @@ class CassettePlayerWidget extends StatelessWidget {
                 color: AppColors.cream,
                 borderRadius: BorderRadius.circular(AppSpacing.radiusSmall),
               ),
-              child: Center(
+              child: const Center(
                 child: Text(
                   'A song for you',
                   style: TextStyle(
@@ -113,7 +113,7 @@ class CassettePlayerWidget extends StatelessWidget {
         child: Container(
           width: size * 0.3,
           height: size * 0.3,
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             shape: BoxShape.circle,
             color: AppColors.vinylBlack,
           ),

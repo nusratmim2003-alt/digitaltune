@@ -89,7 +89,7 @@ class _UnlockScreenState extends ConsumerState<UnlockScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              CircularProgressIndicator(
+              const CircularProgressIndicator(
                 valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
               ),
               const SizedBox(height: AppSpacing.lg),
@@ -160,7 +160,7 @@ class _UnlockScreenState extends ConsumerState<UnlockScreen> {
                     color: AppColors.accent.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
+                  child: const Icon(
                     Icons.lock_outline,
                     size: 80,
                     color: AppColors.accent,
@@ -240,7 +240,7 @@ class _UnlockScreenState extends ConsumerState<UnlockScreen> {
                       borderRadius: BorderRadius.circular(
                         AppSpacing.radiusMedium,
                       ),
-                      borderSide: BorderSide(
+                      borderSide: const BorderSide(
                         color: AppColors.accent,
                         width: 2,
                       ),

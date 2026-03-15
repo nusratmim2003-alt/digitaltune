@@ -29,7 +29,7 @@ class SplashScreen extends ConsumerWidget {
                   ),
                 ],
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.music_note_rounded,
                 size: 60,
                 color: AppColors.accent,
@@ -54,7 +54,7 @@ class SplashScreen extends ConsumerWidget {
             const SizedBox(height: 40),
 
             // Loading indicator
-            SizedBox(
+            const SizedBox(
               width: 32,
               height: 32,
               child: CircularProgressIndicator(

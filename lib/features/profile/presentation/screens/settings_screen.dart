@@ -30,7 +30,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text('Cancel', style: TextStyle(color: AppColors.mutedText)),
+            child: const Text('Cancel', style: TextStyle(color: AppColors.mutedText)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
@@ -60,10 +60,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            if (context.canPop())
+            if (context.canPop()) {
               context.pop();
-            else
+            } else {
               context.go('/profile');
+            }
           },
         ),
       ),
@@ -86,7 +87,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             onChanged: (value) {
               setState(() => _emailNotifications = value);
             },
-            activeColor: AppColors.amberAccent,
+            activeThumbColor: AppColors.amberAccent,
           ),
           SwitchListTile(
             secondary: const Icon(Icons.notifications_outlined),
@@ -95,7 +96,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             onChanged: (value) {
               setState(() => _pushNotifications = value);
             },
-            activeColor: AppColors.amberAccent,
+            activeThumbColor: AppColors.amberAccent,
           ),
           const Divider(),
 
@@ -109,7 +110,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             onChanged: (value) {
               setState(() => _anonymousModeDefault = value);
             },
-            activeColor: AppColors.amberAccent,
+            activeThumbColor: AppColors.amberAccent,
           ),
           const Divider(),
 

@@ -63,7 +63,7 @@ class LandingHomeScreen extends ConsumerWidget {
       ),
       decoration: BoxDecoration(
         color: AppColors.white.withOpacity(0.6),
-        border: Border(bottom: BorderSide(color: AppColors.border, width: 1)),
+        border: const Border(bottom: BorderSide(color: AppColors.border, width: 1)),
       ),
       child: SafeArea(
         child: Row(
@@ -193,7 +193,7 @@ class LandingHomeScreen extends ConsumerWidget {
 
             // Profile/Login Icon
             IconButton(
-              icon: Icon(
+              icon: const Icon(
                 Icons.person_outline,
                 color: AppColors.mutedText,
                 size: 22,
@@ -690,7 +690,7 @@ class LandingHomeScreen extends ConsumerWidget {
                 color: AppColors.cassetteBrown.withOpacity(0.9),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.music_note_rounded,
                 color: AppColors.accent,
                 size: 14,

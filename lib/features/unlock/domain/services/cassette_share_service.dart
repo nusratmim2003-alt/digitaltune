@@ -20,7 +20,7 @@ class CassetteShareService {
   String generateShareCode() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Avoid confusing chars
     final random = Random();
-    final length = 6;
+    const length = 6;
 
     return List.generate(
       length,

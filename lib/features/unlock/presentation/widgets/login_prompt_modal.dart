@@ -53,7 +53,7 @@ class LoginPromptModal extends StatelessWidget {
               color: AppColors.accent.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(
+            child: const Icon(
               Icons.person_outline,
               size: 32,
               color: AppColors.accent,
@@ -96,7 +96,7 @@ class LoginPromptModal extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
           TextButton(
             onPressed: () => context.pop(false),
-            child: Text(
+            child: const Text(
               'Maybe Later',
               style: TextStyle(
                 color: AppColors.mutedText,

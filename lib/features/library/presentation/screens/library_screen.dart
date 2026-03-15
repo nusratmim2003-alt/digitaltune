@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/cassette_widgets.dart';
-import '../../../../core/widgets/state_widgets.dart';
 import '../../../../data/models/cassette.dart';
 import '../../domain/providers/library_provider.dart';
 
@@ -187,7 +186,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
               const SizedBox(height: AppSpacing.xl),
               const Text('No cassettes yet'),
               const SizedBox(height: AppSpacing.sm),
-              Text(
+              const Text(
                 'Your memories will appear here',
                 style: TextStyle(color: AppColors.lightBrown),
                 textAlign: TextAlign.center,

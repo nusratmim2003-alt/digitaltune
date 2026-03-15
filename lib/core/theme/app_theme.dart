@@ -14,7 +14,7 @@ class AppTheme {
       brightness: Brightness.light,
 
       // Color Scheme
-      colorScheme: ColorScheme.light(
+      colorScheme: const ColorScheme.light(
         primary: AppColors.accent,
         secondary: AppColors.mutedText,
         surface: AppColors.background,

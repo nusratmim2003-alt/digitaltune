@@ -35,7 +35,7 @@ class WelcomeScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.music_note_rounded,
                   size: 60,
                   color: AppColors.accent,

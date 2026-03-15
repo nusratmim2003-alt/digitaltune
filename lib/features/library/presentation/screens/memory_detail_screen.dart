@@ -194,10 +194,11 @@ class _MemoryDetailScreenState extends ConsumerState<MemoryDetailScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            if (context.canPop())
+            if (context.canPop()) {
               context.pop();
-            else
+            } else {
               context.go('/');
+            }
           },
         ),
         actions: [

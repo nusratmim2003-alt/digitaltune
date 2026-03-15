@@ -385,7 +385,7 @@ class _CassetteExperienceScreenState
                       // Create your own CTA
                       TextButton(
                         onPressed: () => context.go('/create-cassette'),
-                        child: Text(
+                        child: const Text(
                           'Create your own cassette →',
                           style: TextStyle(
                             color: AppColors.accent,

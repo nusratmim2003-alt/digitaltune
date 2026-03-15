@@ -124,7 +124,7 @@ class CassetteCard extends StatelessWidget {
                       ),
                       if (cassette.replyCount > 0) ...[
                         const SizedBox(width: AppSpacing.xs),
-                        Icon(
+                        const Icon(
                           Icons.reply,
                           size: AppSpacing.iconSmall,
                           color: AppColors.lightBrown,

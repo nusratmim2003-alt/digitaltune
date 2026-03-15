@@ -6,16 +6,42 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/state_widgets.dart';
 import '../../../auth/domain/providers/auth_provider.dart';
+import '../../../library/domain/providers/library_provider.dart';
 
-class ProfileScreen extends ConsumerWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _loadProfileStats();
+  }
+
+  Future<void> _loadProfileStats() async {
+    final authState = ref.read(authProvider);
+    if (!authState.isAuthenticated) return;
+
+    final notifier = ref.read(libraryProvider.notifier);
+    await notifier.fetchSentCassettes();
+    await notifier.fetchSavedCassettes();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
+    final libraryState = ref.watch(libraryProvider);
     final user = authState.user;
-    const sent = 0;
-    const saved = 0;
+    final sent = libraryState.sentCassettes.length;
+    final saved = libraryState.savedCassettes.length;
+    final replies = libraryState.sentCassettes.fold<int>(
+      0,
+      (sum, cassette) => sum + cassette.replyCount,
+    );
 
     if (user == null) {
       return Scaffold(
@@ -101,7 +127,7 @@ class ProfileScreen extends ConsumerWidget {
                 children: [
                   _buildStat('Sent', '$sent'),
                   Container(width: 1, height: 40, color: AppColors.greyMedium),
-                  _buildStat('Replies', '0'),
+                  _buildStat('Replies', '$replies'),
                   Container(width: 1, height: 40, color: AppColors.greyMedium),
                   _buildStat('Saved', '$saved'),
                 ],
@@ -153,7 +179,7 @@ class ProfileScreen extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text('Cancel', style: TextStyle(color: AppColors.mutedText)),
+            child: const Text('Cancel', style: TextStyle(color: AppColors.mutedText)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),

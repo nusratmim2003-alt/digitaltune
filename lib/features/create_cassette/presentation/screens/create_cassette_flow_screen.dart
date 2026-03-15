@@ -551,7 +551,7 @@ Password: ${_passwordController.text}
           subtitle: const Text('Your name won\'t appear on the cassette'),
           value: _isAnonymous,
           onChanged: (value) => setState(() => _isAnonymous = value),
-          activeColor: AppColors.amberAccent,
+          activeThumbColor: AppColors.amberAccent,
         ),
       ],
     );
