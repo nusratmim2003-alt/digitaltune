@@ -85,4 +85,27 @@ class BdappsAuthService {
 
     return false;
   }
+
+  /// Unsubscribe the given phone number from BDApps subscription.
+  /// Returns the parsed response map from the unsubscription endpoint.
+  Future<Map<String, dynamic>> unsubscribe(String phone) async {
+    final response = await _dio.post(
+      '$_baseUrl/unsubscription.php',
+      data: {'user_mobile': phone},
+      options: Options(contentType: Headers.formUrlEncodedContentType),
+    );
+
+    if (response.data is Map<String, dynamic>) {
+      return response.data as Map<String, dynamic>;
+    }
+
+    // Some endpoints may return plain text — try to decode if possible
+    try {
+      if (response.data is String) {
+        return Map<String, dynamic>.from(response.data as Map);
+      }
+    } catch (_) {}
+
+    throw Exception('Invalid server response from unsubscribe endpoint');
+  }
 }

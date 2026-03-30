@@ -7,6 +7,7 @@ import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/state_widgets.dart';
 import '../../../auth/domain/providers/auth_provider.dart';
 import '../../../library/domain/providers/library_provider.dart';
+import '../../../../data/services/bdapps_auth_service.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -159,6 +160,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 child: const Text('Log Out'),
               ),
             ),
+            const SizedBox(height: AppSpacing.md),
+            // Unsubscribe button
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+              child: OutlinedButton(
+                onPressed: () => _handleUnsubscribe(context, ref),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.error,
+                  side: const BorderSide(color: AppColors.error),
+                ),
+                child: const Text('Unsubscribe'),
+              ),
+            ),
             const SizedBox(height: AppSpacing.xl),
           ],
         ),
@@ -197,6 +211,64 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       if (context.mounted) {
         AppToast.show(context, 'Logged out successfully');
       }
+    }
+  }
+
+  Future<void> _handleUnsubscribe(BuildContext context, WidgetRef ref) async {
+    final authState = ref.read(authProvider);
+    final user = authState.user;
+    if (user == null) {
+      AppToast.show(context, 'No user found', isError: true);
+      return;
+    }
+
+    final phone = user.id;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.paper,
+        title: Text('Unsubscribe', style: AppTypography.h3),
+        content: Text(
+          'Are you sure you want to unsubscribe from BDApps? This will stop future messages and may log you out.',
+          style: AppTypography.body,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel', style: TextStyle(color: AppColors.mutedText)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            child: const Text('Unsubscribe'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    // Show loading
+    AppToast.show(context, 'Processing unsubscription...');
+
+    try {
+      final bdapps = ref.read(bdappsAuthServiceProvider);
+      final res = await bdapps.unsubscribe(phone);
+
+      final success = res['success'] == true || (res['statusCode']?.toString().toUpperCase() == 'S1000');
+      final message = res['message']?.toString() ?? res['statusDetail']?.toString() ?? 'Unsubscribe request completed.';
+
+      if (success) {
+        AppToast.show(context, 'Unsubscribed successfully');
+        // Log out locally to avoid stale session
+        final authNotifier = ref.read(authProvider.notifier);
+        await authNotifier.logout();
+      } else {
+        AppToast.show(context, message, isError: true);
+      }
+    } catch (e) {
+      AppToast.show(context, 'Unsubscription failed. Please try again later.', isError: true);
     }
   }
 
