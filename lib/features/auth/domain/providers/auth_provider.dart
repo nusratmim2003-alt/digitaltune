@@ -21,6 +21,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   String _buildEmailFromPhone(String phone) => 'bdapps_$phone@tuneletter.app';
   String _buildPasswordFromPhone(String phone) => 'bdapps-$phone-otp';
+  String _buildDisplayNameFromPhone(String phone) => 'TuneLetter User';
 
   Future<bool> _ensureBackendSession(String phone) async {
     final email = _buildEmailFromPhone(phone);
@@ -42,7 +43,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       if (e.response?.statusCode == 401 || e.response?.statusCode == 404) {
         try {
           await _apiService.register(
-            name: phone,
+            name: _buildDisplayNameFromPhone(phone),
             email: email,
             password: password,
           );
@@ -100,7 +101,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
           final user = UserModel(
             id: phone,
-            name: phone,
+            name: _buildDisplayNameFromPhone(phone),
             email: '$phone@bdapps.local',
           );
 
@@ -138,7 +139,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
       final user = UserModel(
         id: phone,
-        name: phone,
+        name: _buildDisplayNameFromPhone(phone),
         email: '$phone@bdapps.local',
       );
 

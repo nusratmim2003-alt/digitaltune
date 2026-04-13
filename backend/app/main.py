@@ -124,17 +124,15 @@ async def web_unlock_page(share_code: str, db: Session = Depends(get_db)):
     else:
         raw_name = (getattr(cassette.sender, "name", None) or "").strip()
 
-        # If sender name looks like a phone number, try a cleaner fallback.
+        # Hide technical BDApps / phone-style identifiers from the UI.
         is_phone_like = bool(re.fullmatch(r"(?:tel:)?\+?[\d\s\-()]{10,}", raw_name, flags=re.IGNORECASE))
-        if is_phone_like:
-            email = (getattr(cassette.sender, "email", None) or "").strip()
-            email_local = email.split("@")[0].replace("_", " ").replace(".", " ").strip()
-            if email_local and not email_local.isdigit():
-                sender_display_name = email_local.title()
-            else:
-                sender_display_name = "Someone"
+        has_bdapps_marker = "bdapps" in raw_name.lower()
+        has_letters = bool(re.search(r"[A-Za-z]", raw_name))
+
+        if not raw_name or is_phone_like or has_bdapps_marker or not has_letters:
+            sender_display_name = "Someone"
         else:
-            sender_display_name = raw_name or "Someone"
+            sender_display_name = raw_name
 
     sender_name = safe(sender_display_name)
     sender_name_json = json.dumps(sender_display_name)
