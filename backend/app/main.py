@@ -114,7 +114,7 @@ async def web_unlock_page(share_code: str, db: Session = Depends(get_db)):
     app_link = f"digitalcassette://unlock/{share_code}"
     page_title = "🎵 You’ve received a TuneLetter"
     page_description = "A message + a song, just for you."
-    cassette_image = cassette.thumbnailUrl or "https://digitaltune.onrender.com/static/cassette-preview.png"
+    cassette_image = "https://digitaltune.onrender.com/static/cassette-preview.png"
     cassette_id_json = json.dumps(share_code)
     youtube_embed_json = json.dumps(cassette.youtubeEmbedUrl or "")
     youtube_url_json = json.dumps(cassette.youtubeUrl or "")
@@ -125,7 +125,7 @@ async def web_unlock_page(share_code: str, db: Session = Depends(get_db)):
         sender_display_name = getattr(cassette.sender, "name", None) or "Someone"
 
     sender_name = safe(sender_display_name)
-    letter_text = safe(cassette.letterText).replace("\n", "<br>")
+    sender_name_json = json.dumps(sender_display_name)
     cassette_image_safe = safe(cassette_image)
     page_title_safe = safe(page_title)
     page_description_safe = safe(page_description)
@@ -203,15 +203,6 @@ async def web_unlock_page(share_code: str, db: Session = Depends(get_db)):
                 .primary {{ background: var(--accent); color: white; }}
                 .secondary {{ background: rgba(255,255,255,.10); color: var(--white); border: 1px solid rgba(255,255,255,.12); }}
                 .full {{ width: 100%; }}
-                .result {{ margin-top: 16px; white-space: pre-wrap; line-height: 1.7; color: var(--white); }}
-                .player {{ margin-top: 16px; }}
-                iframe {{ width: 100%; aspect-ratio: 16 / 9; border: 0; border-radius: 18px; }}
-                .content-card {{
-                    margin-top: 16px; background: var(--card); border: 1px solid var(--line);
-                    border-radius: 18px; padding: 16px; color: var(--ink);
-                }}
-                .emotion {{ display: inline-flex; align-items: center; gap: 8px; margin-bottom: 8px; font-weight: 700; color: var(--accent-dark); }}
-                .letter {{ color: var(--ink); line-height: 1.75; white-space: pre-wrap; }}
                 .muted {{ color: rgba(255,255,255,.62); font-size: 14px; }}
             </style>
         </head>
@@ -230,7 +221,7 @@ async def web_unlock_page(share_code: str, db: Session = Depends(get_db)):
 
                     <div class="meta">
                         <div class="sender">{sender_name} sent you a memory</div>
-                        <div class="hint">Open in the app or unlock right here on this page.</div>
+                        <div class="hint">Enter the password to open &amp; listen</div>
                     </div>
 
                     <div>
@@ -240,11 +231,10 @@ async def web_unlock_page(share_code: str, db: Session = Depends(get_db)):
                             <button class="btn primary full" id="unlockBtn">Open & Listen</button>
                             <a class="btn secondary" href="{app_link_safe}">Open in App</a>
                         </div>
-                        <div class="muted" style="margin-top:10px">If you have the app installed, it opens there. Otherwise, unlock here.</div>
+                        <div class="muted" style="margin-top:10px">The link already includes the code. You only need the password.</div>
                     </div>
 
-                    <div id="result" class="result"></div>
-                    <div id="player" class="player"></div>
+                    <div id="status" class="muted" style="margin-top:12px"></div>
                 </div>
             </div>
 
@@ -252,8 +242,8 @@ async def web_unlock_page(share_code: str, db: Session = Depends(get_db)):
                 const shareCode = {cassette_id_json};
                 const youtubeEmbedUrl = {youtube_embed_json};
                 const youtubeUrl = {youtube_url_json};
-                const resultEl = document.getElementById('result');
-                const playerEl = document.getElementById('player');
+                const senderName = {sender_name_json};
+                const statusEl = document.getElementById('status');
                 const unlockBtn = document.getElementById('unlockBtn');
                 const pwdEl = document.getElementById('pwd');
 
@@ -269,13 +259,13 @@ async def web_unlock_page(share_code: str, db: Session = Depends(get_db)):
                 async function unlockCassette() {{
                     const password = pwdEl.value.trim();
                     if (!password) {{
-                        resultEl.textContent = 'Please enter a password.';
+                        statusEl.textContent = 'Please enter a password.';
                         pwdEl.focus();
                         return;
                     }}
 
-                    resultEl.textContent = 'Unlocking...';
-                    playerEl.innerHTML = '';
+                    statusEl.textContent = 'Unlocking...';
+                    unlockBtn.disabled = true;
 
                     try {{
                         const res = await fetch(`/api/cassettes/${{shareCode}}/unlock`, {{
@@ -286,26 +276,25 @@ async def web_unlock_page(share_code: str, db: Session = Depends(get_db)):
 
                         const data = await res.json();
                         if (!res.ok) {{
-                            resultEl.textContent = data.detail || data.message || 'Failed to unlock cassette.';
+                            statusEl.textContent = data.detail || data.message || 'Failed to unlock cassette.';
+                            unlockBtn.disabled = false;
                             return;
                         }}
 
-                        resultEl.innerHTML = `
-                            <div class="content-card">
-                                <div class="emotion">${{escapeHtml(data.emotionEmoji || '🎵')}} <span>${{escapeHtml(data.emotionTag || 'TuneLetter')}}</span></div>
-                                <div class="letter">${{escapeHtml(data.letterText || '').replace(/\\n/g, '<br>')}}</div>
-                            </div>
-                            <div class="actions" style="margin-top: 14px;">
-                                <a class="btn primary full" href="${{escapeHtml(data.youtubeUrl || youtubeUrl || '')}}" target="_blank" rel="noreferrer">Watch in YouTube</a>
-                                <a class="btn secondary" href="{app_link_safe}">Open in App</a>
-                            </div>`;
+                        const viewPayload = {{
+                            letterText: data.letterText || '',
+                            youtubeEmbedUrl: data.youtubeEmbedUrl || youtubeEmbedUrl || '',
+                            youtubeUrl: youtubeUrl || '',
+                            emotionTag: data.emotionTag || 'TuneLetter',
+                            emotionEmoji: data.emotionEmoji || '🎵',
+                            senderName: senderName || 'Someone',
+                        }};
 
-                        if (data.youtubeEmbedUrl || youtubeEmbedUrl) {{
-                            const videoUrl = data.youtubeEmbedUrl || youtubeEmbedUrl;
-                            playerEl.innerHTML = `<iframe src="${{videoUrl}}" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
-                        }}
+                        sessionStorage.setItem(`tuneletter-unlock-${{shareCode}}`, JSON.stringify(viewPayload));
+                        window.location.href = `/unlock/${{shareCode}}/view`;
                     }} catch (e) {{
-                        resultEl.textContent = 'Something went wrong. Please try again.';
+                        statusEl.textContent = 'Something went wrong. Please try again.';
+                        unlockBtn.disabled = false;
                     }}
                 }}
 
@@ -313,6 +302,158 @@ async def web_unlock_page(share_code: str, db: Session = Depends(get_db)):
                 pwdEl.addEventListener('keydown', (event) => {{
                     if (event.key === 'Enter') unlockCassette();
                 }});
+            </script>
+        </body>
+    </html>
+    """
+
+    return HTMLResponse(content=html)
+
+
+@app.get("/unlock/{share_code}/view", response_class=HTMLResponse)
+async def web_unlock_view_page(share_code: str, db: Session = Depends(get_db)):
+    cassette = db.query(Cassette).filter(Cassette.shareCode == share_code).first()
+
+    if not cassette:
+        return HTMLResponse(
+            content="""
+            <!doctype html>
+            <html lang='en'>
+                <head>
+                    <meta charset='utf-8'>
+                    <meta name='viewport' content='width=device-width,initial-scale=1'>
+                    <title>TuneLetter not found</title>
+                </head>
+                <body style='font-family:system-ui;padding:24px'>
+                    <h2>🎵 TuneLetter not found</h2>
+                    <p>This link may be invalid or expired.</p>
+                </body>
+            </html>
+            """,
+            status_code=404,
+        )
+
+    cassette_id_json = json.dumps(share_code)
+    app_link = f"digitalcassette://unlock/{share_code}"
+    app_link_safe = html_escape(app_link, quote=True)
+
+    html = f"""
+    <!doctype html>
+    <html lang="en">
+        <head>
+            <meta charset="utf-8" />
+            <meta name="viewport" content="width=device-width,initial-scale=1" />
+            <title>🎵 Your TuneLetter</title>
+            <style>
+                :root {{
+                    --bg: #4b2f1e;
+                    --card: #fffaf2;
+                    --ink: #2b2114;
+                    --accent: #d6a73d;
+                    --line: rgba(107,79,42,.16);
+                    --white: #fff;
+                }}
+                * {{ box-sizing: border-box; }}
+                body {{
+                    margin: 0;
+                    min-height: 100vh;
+                    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+                    background: linear-gradient(180deg, #3b2518 0%, var(--bg) 20%, #2f1d13 100%);
+                    color: var(--white);
+                }}
+                .wrap {{ max-width: 640px; margin: 0 auto; padding: 20px 16px 40px; }}
+                .title {{ margin: 10px 0 6px; font-size: clamp(24px, 5vw, 34px); text-align: center; }}
+                .sub {{ margin: 0 0 14px; text-align: center; color: rgba(255,255,255,.72); }}
+                .card {{
+                    background: rgba(255,250,242,.08);
+                    border: 1px solid rgba(255,255,255,.12);
+                    border-radius: 24px;
+                    padding: 16px;
+                    box-shadow: 0 18px 45px rgba(0,0,0,.18);
+                    backdrop-filter: blur(8px);
+                }}
+                .content-card {{
+                    margin-top: 12px;
+                    background: var(--card);
+                    border: 1px solid var(--line);
+                    border-radius: 18px;
+                    padding: 16px;
+                    color: var(--ink);
+                    line-height: 1.75;
+                }}
+                .emotion {{ display: inline-flex; align-items: center; gap: 8px; margin-bottom: 8px; font-weight: 700; color: #b78518; }}
+                .actions {{ display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }}
+                .btn {{
+                    appearance: none; border: 0; border-radius: 14px; padding: 12px 16px;
+                    font-weight: 700; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;
+                }}
+                .primary {{ background: var(--accent); color: white; }}
+                .secondary {{ background: rgba(255,255,255,.10); color: var(--white); border: 1px solid rgba(255,255,255,.12); }}
+                .full {{ width: 100%; }}
+                iframe {{ width: 100%; aspect-ratio: 16 / 9; border: 0; border-radius: 18px; margin-top: 14px; }}
+                .warning {{ color: #ffd28f; }}
+            </style>
+        </head>
+        <body>
+            <div class="wrap">
+                <h1 class="title">🎵 Your TuneLetter</h1>
+                <p class="sub">Unlocked successfully</p>
+
+                <div class="card">
+                    <div id="from" class="sub" style="text-align:left"></div>
+                    <div id="message" class="content-card"></div>
+                    <div id="player"></div>
+                    <div class="actions">
+                        <a id="youtubeBtn" class="btn primary full" href="#" target="_blank" rel="noreferrer">Watch in YouTube</a>
+                        <a class="btn secondary" href="{app_link_safe}">Open in App</a>
+                    </div>
+                    <div id="warning" class="warning" style="margin-top:12px"></div>
+                </div>
+            </div>
+
+            <script>
+                const shareCode = {cassette_id_json};
+                const dataRaw = sessionStorage.getItem(`tuneletter-unlock-${{shareCode}}`);
+                const fromEl = document.getElementById('from');
+                const messageEl = document.getElementById('message');
+                const playerEl = document.getElementById('player');
+                const warningEl = document.getElementById('warning');
+                const youtubeBtn = document.getElementById('youtubeBtn');
+
+                function escapeHtml(text) {{
+                    return String(text)
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;')
+                        .replace(/"/g, '&quot;')
+                        .replace(/'/g, '&#39;');
+                }}
+
+                if (!dataRaw) {{
+                    warningEl.innerHTML = 'This page needs an unlock first. <a href="/unlock/' + encodeURIComponent(shareCode) + '" style="color:#ffe19b">Go to unlock page</a>.';
+                }} else {{
+                    try {{
+                        const data = JSON.parse(dataRaw);
+                        fromEl.textContent = `${{data.senderName || 'Someone'}} sent you a memory`;
+                        messageEl.innerHTML = `
+                            <div class="emotion">${{escapeHtml(data.emotionEmoji || '🎵')}} <span>${{escapeHtml(data.emotionTag || 'TuneLetter')}}</span></div>
+                            <div>${{escapeHtml(data.letterText || '').replace(/\\n/g, '<br>')}}</div>
+                        `;
+
+                        if (data.youtubeEmbedUrl) {{
+                            playerEl.innerHTML = `<iframe src="${{data.youtubeEmbedUrl}}" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+                        }}
+
+                        const ytUrl = data.youtubeUrl || '#';
+                        youtubeBtn.href = ytUrl;
+                        if (ytUrl === '#') {{
+                            youtubeBtn.style.opacity = '0.6';
+                            youtubeBtn.style.pointerEvents = 'none';
+                        }}
+                    }} catch (e) {{
+                        warningEl.textContent = 'Failed to read unlocked data. Please unlock again.';
+                    }}
+                }}
             </script>
         </body>
     </html>
