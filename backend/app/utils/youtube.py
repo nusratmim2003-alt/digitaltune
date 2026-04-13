@@ -43,6 +43,9 @@ YOUTUBE_PATTERNS = [
     
     # YouTube Music: https://music.youtube.com/watch?v=dQw4w9WgXcQ
     r'(?:https?:\/\/)?music\.youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})',
+
+    # Shorts URL: https://www.youtube.com/shorts/dQw4w9WgXcQ
+    r'(?:https?:\/\/)?(?:www\.)?youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})',
 ]
 
 
