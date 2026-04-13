@@ -118,7 +118,13 @@ async def web_unlock_page(share_code: str, db: Session = Depends(get_db)):
     cassette_id_json = json.dumps(share_code)
     youtube_embed_json = json.dumps(cassette.youtubeEmbedUrl or "")
     youtube_url_json = json.dumps(cassette.youtubeUrl or "")
-    sender_name = safe(cassette.displaySenderName)
+
+    if cassette.senderIsAnonymous:
+        sender_display_name = "Someone"
+    else:
+        sender_display_name = getattr(cassette.sender, "name", None) or "Someone"
+
+    sender_name = safe(sender_display_name)
     letter_text = safe(cassette.letterText).replace("\n", "<br>")
     cassette_image_safe = safe(cassette_image)
     page_title_safe = safe(page_title)
