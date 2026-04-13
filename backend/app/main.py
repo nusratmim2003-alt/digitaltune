@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from html import escape as html_escape
 import json
 import os
+import re
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -114,7 +115,6 @@ async def web_unlock_page(share_code: str, db: Session = Depends(get_db)):
     app_link = f"digitalcassette://unlock/{share_code}"
     page_title = "🎵 You’ve received a TuneLetter"
     page_description = "A message + a song, just for you."
-    cassette_image = "https://digitaltune.onrender.com/static/cassette-preview.png"
     cassette_id_json = json.dumps(share_code)
     youtube_embed_json = json.dumps(cassette.youtubeEmbedUrl or "")
     youtube_url_json = json.dumps(cassette.youtubeUrl or "")
@@ -122,11 +122,22 @@ async def web_unlock_page(share_code: str, db: Session = Depends(get_db)):
     if cassette.senderIsAnonymous:
         sender_display_name = "Someone"
     else:
-        sender_display_name = getattr(cassette.sender, "name", None) or "Someone"
+        raw_name = (getattr(cassette.sender, "name", None) or "").strip()
+
+        # If sender name looks like a phone number, try a cleaner fallback.
+        is_phone_like = bool(re.fullmatch(r"(?:tel:)?\+?[\d\s\-()]{10,}", raw_name, flags=re.IGNORECASE))
+        if is_phone_like:
+            email = (getattr(cassette.sender, "email", None) or "").strip()
+            email_local = email.split("@")[0].replace("_", " ").replace(".", " ").strip()
+            if email_local and not email_local.isdigit():
+                sender_display_name = email_local.title()
+            else:
+                sender_display_name = "Someone"
+        else:
+            sender_display_name = raw_name or "Someone"
 
     sender_name = safe(sender_display_name)
     sender_name_json = json.dumps(sender_display_name)
-    cassette_image_safe = safe(cassette_image)
     page_title_safe = safe(page_title)
     page_description_safe = safe(page_description)
     app_link_safe = safe(app_link)
@@ -140,12 +151,10 @@ async def web_unlock_page(share_code: str, db: Session = Depends(get_db)):
             <meta name="theme-color" content="#6b4f2a" />
             <meta property="og:title" content="{page_title_safe}" />
             <meta property="og:description" content="{page_description_safe}" />
-            <meta property="og:image" content="{cassette_image_safe}" />
             <meta property="og:type" content="website" />
             <meta property="twitter:card" content="summary_large_image" />
             <meta property="twitter:title" content="{page_title_safe}" />
             <meta property="twitter:description" content="{page_description_safe}" />
-            <meta property="twitter:image" content="{cassette_image_safe}" />
             <title>{page_title_safe}</title>
             <style>
                 :root {{
@@ -180,12 +189,6 @@ async def web_unlock_page(share_code: str, db: Session = Depends(get_db)):
                     border: 1px solid rgba(255,255,255,.12); border-radius: 28px; padding: 18px;
                     box-shadow: 0 18px 45px rgba(0,0,0,.18); backdrop-filter: blur(8px);
                 }}
-                .preview {{
-                    border-radius: 22px; overflow: hidden; background: rgba(255,255,255,.08);
-                    aspect-ratio: 16 / 9; display: grid; place-items: center; border: 1px solid var(--line);
-                    margin-bottom: 16px;
-                }}
-                .preview img {{ width: 100%; height: 100%; object-fit: cover; display: block; }}
                 .meta {{ display: grid; gap: 6px; margin-bottom: 16px; }}
                 .sender {{ font-weight: 700; font-size: 18px; color: var(--white); }}
                 .hint {{ color: rgba(255,255,255,.65); font-size: 14px; }}
@@ -215,10 +218,6 @@ async def web_unlock_page(share_code: str, db: Session = Depends(get_db)):
                 </div>
 
                 <div class="cassette">
-                    <div class="preview">
-                        <img src="{cassette_image_safe}" alt="TuneLetter preview" />
-                    </div>
-
                     <div class="meta">
                         <div class="sender">{sender_name} sent you a memory</div>
                         <div class="hint">Enter the password to open &amp; listen</div>
